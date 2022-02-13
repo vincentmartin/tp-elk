@@ -1,0 +1,56 @@
+version: '3'
+services:
+
+  # Serveur OpenSearch (fork Elasticsearch 7.10)
+  opensearch:
+    image: opensearchproject/opensearch:1.2.4
+    container_name: opensearch
+    environment:
+      - cluster.name=docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - plugins.security.disabled=true # ATTENTION : SECURITE DESACTIVE
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - ./opensearch-data:/usr/share/opensearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+      - 9600:9600
+    networks:
+      - opensearch-net
+
+  # Logstash pour l'ingestion de données
+  logstash-oss:
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.13.4
+    container_name: logstash-oss
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - 5000:5000
+    #volumes:
+    #  - ./pipeline:/usr/share/logstash/pipeline:ro
+    networks:
+      - opensearch-net
+    depends_on:
+      - opensearch
+  # Opensearch dashboard pour la visualisation
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:1.2.0
+    container_name: opensearch-dashboards
+    ports:
+        - 5601:5601
+    networks:
+      - opensearch-net
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
+      - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"
+    depends_on:
+      - opensearch
+
+networks:
+  opensearch-net:
+    driver: bridge
