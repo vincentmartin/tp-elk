@@ -139,7 +139,7 @@ En une requête, calculer le nombre de lignes (champ line_id) pour chaque pièce
 # Partie 3 - Pour aller plus loin : Logstash
 Logstash est un formidable outil pour le traitement et l’ingestion de données, notamment dans Elastic search.
 
-- Etudier logstash sur la page https://www.elastic.co/fr/products/logstash
+- Etudier logstash sur la page https://opensearch.org/docs/latest/clients/logstash/index/ 
 - Télécharger la carte des hôtels classés en IDF ici https://www.data.gouv.fr/fr/datasets/la-carte-des-hotels-classes-en-ile-de-france-idf/
 puis écrire une configuration Logstash pour ingérer ces données dans OpenSearch
 - Développez un tableau de bord sur ces données. Ce tableau devra comporter une carte géographique des hôtels classés en fonction de leur nombre d’étoiles.
