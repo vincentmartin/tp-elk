@@ -133,8 +133,8 @@ Documentation : https://www.elastic.co/guide/en/elasticsearch/reference/current/
 
 ### AGGREGATION API
 
-Trouver le nombre total de pièces (champ play_name)
-En une requête, calculer le nombre de lignes (champ line_id) pour chaque pièce (champ play_name)
+- Trouver le nombre total de pièces (champ play_name)
+- En une requête, calculer le nombre de lignes (champ line_id) pour chaque pièce (champ play_name)
 
 # Partie 3 - Pour aller plus loin : Logstash
 Logstash est un formidable outil pour le traitement et l’ingestion de données, notamment dans Elastic search.
