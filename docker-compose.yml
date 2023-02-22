@@ -3,7 +3,7 @@ services:
 
   # Serveur OpenSearch (fork Elasticsearch 7.10)
   opensearch:
-    image: opensearchproject/opensearch:1.2.4
+    image: opensearchproject/opensearch:2.5.0
     container_name: opensearch
     environment:
       - cluster.name=docker-cluster
@@ -25,7 +25,7 @@ services:
 
   # Logstash pour l'ingestion de données
   logstash-oss:
-    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.13.4
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:8.6.1
     container_name: logstash-oss
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -39,7 +39,7 @@ services:
       - opensearch
   # Opensearch dashboard pour la visualisation
   opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:1.2.0
+    image: opensearchproject/opensearch-dashboards:2.5.0
     container_name: opensearch-dashboards
     ports:
         - 5601:5601

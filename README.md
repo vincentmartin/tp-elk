@@ -21,9 +21,9 @@ A la racine, créer le fichier docker-compose.yml  qui contiendra toutes les ins
 ## Images
 
 ```
-opensearchproject/opensearch:1.2.4
-opensearchproject/logstash-oss-with-opensearch-output-plugin:7.13.4
-opensearchproject/opensearch-dashboards:1.2.0
+opensearchproject/opensearch:2.5.0
+opensearchproject/logstash-oss-with-opensearch-output-plugin:8.6.1
+opensearchproject/opensearch-dashboards:2.5.0
 ```
 
 ## Ports
