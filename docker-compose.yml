@@ -3,16 +3,18 @@ services:
 
   # Serveur OpenSearch (fork Elasticsearch 7.10)
   opensearch:
-    image: opensearchproject/opensearch:2.5.0
+    image: opensearchproject/opensearch:2.6.0
     container_name: opensearch
     environment:
       - cluster.name=docker-cluster
       - discovery.type=single-node
       - bootstrap.memory_lock=true
+      - node.roles=ml, data, master, ingest
+      - plugins.ml_commons.native_memory_threshold=100
       - plugins.security.disabled=true # ATTENTION : SECURITE DESACTIVE
-      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "OPENSEARCH_JAVA_OPTS=-Xms4000m -Xmx4000m"
     volumes:
-      - ./opensearch-data:/usr/share/opensearch/data
+      - ./docker/opensearch/data:/usr/share/opensearch/data
     ulimits:
       memlock:
         soft: -1
@@ -28,7 +30,7 @@ services:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:8.6.1
     container_name: logstash-oss
     environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
     ports:
       - 5000:5000
     #volumes:
@@ -37,9 +39,10 @@ services:
       - opensearch-net
     depends_on:
       - opensearch
+      
   # Opensearch dashboard pour la visualisation
   opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:2.5.0
+    image: opensearchproject/opensearch-dashboards:2.6.0
     container_name: opensearch-dashboards
     ports:
         - 5601:5601
@@ -48,6 +51,8 @@ services:
     environment:
       - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
       - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"
+    volumes:
+      - ./docker/opensearch-dashboards/config/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
     depends_on:
       - opensearch
 

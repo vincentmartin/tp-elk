@@ -1,2 +1,4 @@
 opensearch-data
 *.docx
+.env/
+docker/opensearch/data
