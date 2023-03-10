@@ -48,27 +48,38 @@ Exécutez
 sysctl -w vm.max_map_count=262144 
 ```
 
-pour qu'OpenSearch se lance correctement.
+pour qu'OpenSearch se lance correctement. Commande à exécuter à chaque redémarrage ou spécifier `vm.max_map_count=262144`  dans le fichier `/etc/sysctl.conf` pour une configuration permanente. 
 
-Exécuter docker-compose up pour construire l’environnement. Vérifier le bon fonctionnement de l’environnement en inspectant les logs de docker-compose et en vous connectant à l’URL http://localhost:9200
+Lancer la commande
+
+```docker-compose up
+```
+
+pour construire l’environnement. 
+
+Vérifier le bon fonctionnement de l’environnement en inspectant les logs de `docker-compose` et en vous connectant à l’URL http://localhost:9200
 
 # Partie 1 - Gestion de données simples
-## Indexation de données 
-Télécharger le jeu de données sur https://download.elastic.co/demos/kibana/gettingstarted/accounts.zip
+## Indexation de données
+
+Télécharger le jeu de données sur https://download.elastic.co/demos/kibana/gettingstarted/accounts.zip.
+
+
 Indexer les données dans OpenSearch grâce à la commande suivante :
 
 ```
 curl -H 'Content-Type: application/x-ndjson' -XPOST 'localhost:9200/bank/_bulk?pretty' --data-binary @accounts.json
 ```
 
-Toutes les données sont alors envoyées dans l’index nommé bank et le type account.
+Toutes les données sont alors envoyées dans l’index nommé `bank`.
 
 
-### Prise en main d'OpenSearch
-Rendez-vous à l’URL http://localhost:5601 puis dans Dev Tools
+## Prise en main d'OpenSearch
+Se rendre à l’URL http://localhost:5601 puis dans `Dev Tools`.
 
 A l’aide de la documentation disponible au lien ci-dessous, vous allez écrire les requêtes permettant de répondre à différentes questions.
-https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html
+
+Documentation utile : https://opensearch.org/docs/2.6/
 
 ## Requêtage simple 
 
@@ -91,7 +102,7 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html
 - (Question) Retrouver tous les comptes dont la ville (champs city) est Belvoir ET l’employeur Xurban
 
 ## Visualisation des données avec OpenSearch Dashboards
-- Rendez-vous sur l’onglet Visualize et créer les visuels suivants :
+Aller sur l’onglet Visualize et créer les visuels suivants :
 
 - (Question) Métrique affichant la somme des soldes de tous les comptes. Sauver le graphique.
 - (Question) Graphique barre affichant la moyenne des soldes (champ balance) selon l’état (champ state). Sauver le graphique.
@@ -115,11 +126,15 @@ curl -H 'Content-Type: application/x-ndjson' -XPOST 'localhost:9200/shakespeare/
 ```
 
 ## Recherches plein texte
-OpenSearch est un puissant moteur de recherche capable de gérer des millions de documents sur une unique machine et plusieurs milliards lorsqu’il est distribué. 
+OpenSearch est un puissant moteur de recherche capable de gérer des millions de documents sur une unique machine et plusieurs milliards dans un environnement distribué. 
 
 L’objectif des questions ci-dessous est de se rendre compte de ses capacités de recherche et de la rapidité à laquelle les réponses sont données.
-URI SEARCH
-Documentation : https://www.elastic.co/guide/en/elasticsearch/reference/current/search-uri-request.html
+
+### SEARCH API
+
+Répondre aux questions suivante en utilisant l'API Search.
+
+Documentation : https://opensearch.org/docs/1.2/opensearch/rest-api/search/ ou https://www.elastic.co/guide/en/elasticsearch/reference/8.6/search.html
 
 - (Question) Rechercher les documents contenant le terme KING dans les champs text_entry OU playname. Accordez deux fois plus d’importance aux documents qui contiennent le terme dans le champ play_name (astuce : KING^2).
 - (Question) Rechercher les documents où l’orateur (champ speaker) CAESAR parle de Brutus (champ text_entry)
@@ -134,34 +149,36 @@ Documentation : https://www.elastic.co/guide/en/elasticsearch/reference/current/
 
 ### AGGREGATION API
 
+Documentation : https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html
+
 - (Question) Trouver le nombre total de pièces (champ play_name)
 - (Question) En une requête, calculer le nombre de lignes (champ line_id) pour chaque pièce (champ play_name)
 
 # Partie 3 - Recherches sémantiques
 
-Les recherches réalisées précédemment sont principalement des recherches par mots ou phrases basé sur le modèle `tf-idf` qui construit un espace vectoriel dont la taille est égal au nombre total de tokens distincts dans la collection de documents. L'image ci-dessous représente un espace vectoriel avec 3 tokens distincts. Imaginez ce que cela donnerait avec 100,000 tokens distincts !
+Les recherches réalisées précédemment sont principalement des recherches par mots ou par phrases basés sur le modèle `tf-idf`. Ce dernier construit un espace vectoriel dont la taille est égal au nombre total de tokens distincts dans la collection de documents. L'image ci-dessous représente un espace vectoriel avec 3 tokens distincts. Imaginez ce que cela donnerait avec 100,000 tokens distincts !
 
 ![tf-df-vector-space](./img/tfidf-vector-space.png)
 
-Certes, des techniques existent pour limiter l'impact desvariations syntaxiques (bas/haut de casses, mots au pluriel/singulier, synonymes) mais cela pose plusieurs problèmes :
+Certes, des techniques existent pour limiter l'impact des variations syntaxiques (bas/haut de casses, mots au pluriel/singulier, synonymes) mais cela pose plusieurs problèmes :
 - effort requis pour paramétrer minutieusement la construction des tokens ;
 - recourt à des dictionnaires, notamment pour les synonymes ;
 - prise en compte des points précédents pour différentes langues ;
 - sens d'une phrase, paragraphe, document non pris en compte dans sa globalité.
 
-Pour palier ces problèmes, on peut utiliser des techniques avancées de Traitement Automatique du Langage Naturel (TALN) pour construire des espaces vectoriels _sémantiques_ où les mots, paragraphes, documents sont représentés par des vecteurs, appelés _embeddings_ encodant le sens des informations plutôt que leur syntaxe. Les espace vectoriels associés ont une taille fixe, de quelques centaines de dimensions. Ci-dessous un exemple de ce type d'espace en 2 dimensions (source : https://dev.to/jinglescode/word-embeddings-16hb)
+Pour palier ces problèmes, on peut utiliser des techniques avancées de Traitement Automatique du Langage Naturel (TALN) pour construire des espaces vectoriels _sémantiques_ où les mots, paragraphes, documents sont représentés par des vecteurs, appelés _embeddings_, encodant le sens des informations plutôt que leur syntaxe. Les espace vectoriels associés ont une taille fixe, de quelques centaines de dimensions. Ci-dessous un exemple de ce type d'espace en 2 dimensions (source : https://dev.to/jinglescode/word-embeddings-16hb)
 
 ![embeddings](./img/embeddings_2d.png)
 
 Grâce aux _modèles de langue_, notamment aux _transformers_ (https://arxiv.org/abs/1706.03762) pré-entraînés et proposés librement par des sociétés comme Google, OpenAI, Facebook, il est maintenant possible de construire ses propres _embeddings_ sur n'importe quel texte. 
 
-Huggingface est une plateforme proposant nombre de ces modèles pré-entraînés, en particulier des modèles de type _transformers_ que l'on peut utiliser sur nos propres données : https://huggingface.co/sentence-transformers. 
+Huggingface (https://huggingface.co/) est une plateforme proposant nombre de ces modèles pré-entraînés, en particulier des modèles de type _transformers_ que l'on peut utiliser sur nos propres données : https://huggingface.co/sentence-transformers. 
 
 Dans ce TP, nous allons utiliser l'un de ces modèles pour construire un _embedding_ par document et nous permettre de faire des recherches sémantiques et de trouver des documents similaires.
 
 ## Téléchargement et intégration d'un modèle _sentence transformers_ à OpenSearch
 
-Documentation officielle : https://opensearch.org/docs/2.5/neural-search-plugin/index/
+Documentation : https://opensearch.org/docs/2.5/neural-search-plugin/index/
 
 
 - Se placer dans le `Dev Tools` d'OpenSearch.
@@ -185,11 +202,11 @@ POST /_plugins/_ml/models/_upload
 ```
 GET /_plugins/_ml/tasks/<task_id>
 ```
-- Charger le modèle en mémoire en spécifiant le `model_id`de noté précédemment.
+- Charger le modèle en mémoire en spécifiant le `model_id` noté précédemment.
 ```
 POST /_plugins/_ml/models/<model_id>/_load
 ```
-- Créer une pipeline d'ingestion qui indique à OpenSearch de calculer l'embedding sur le texte d'un champ d'un document json. Spécifier le `model_id`dans le champ associé. Exécuter la commande suivante :
+- Créer une pipeline d'ingestion qui indique à OpenSearch de calculer l'embedding sur le texte d'un champ d'un document json. Spécifier le `model_id` dans le champ associé. Exécuter la commande suivante :
 ```
 PUT _ingest/pipeline/news-nlp-pipeline
 {
@@ -206,7 +223,7 @@ PUT _ingest/pipeline/news-nlp-pipeline
   ]
 }
 ```
-- Créer le mapping qui permet d'indiquer comment chaque champ doit être indexé. Noter que le champ `short_description` est de type texte. Grâce à l'étape précédente, le champ `text_embedding` sera automatiquement créé.
+- Créer le mapping qui permet d'indiquer comment chaque champ doit être indexé. Noter que le champ `short_description` est de type texte. Grâce à l'étape précédente, le champ `text_embedding`, contenant l'_embedding_ de la description sera automatiquement créé.
 ```
 PUT /news
 {
