@@ -12,7 +12,7 @@ services:
       - node.roles=ml, data, master, ingest
       - plugins.ml_commons.native_memory_threshold=100
       - plugins.security.disabled=true # ATTENTION : SECURITE DESACTIVE
-      - "OPENSEARCH_JAVA_OPTS=-Xms4000m -Xmx4000m"
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
     volumes:
       - ./docker/opensearch/data:/usr/share/opensearch/data
     ulimits:
