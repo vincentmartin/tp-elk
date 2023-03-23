@@ -52,7 +52,8 @@ pour qu'OpenSearch se lance correctement. Commande à exécuter à chaque redém
 
 Lancer la commande
 
-```docker-compose up
+```
+docker-compose up
 ```
 
 pour construire l’environnement. 
@@ -134,7 +135,7 @@ L’objectif des questions ci-dessous est de se rendre compte de ses capacités 
 
 Répondre aux questions suivante en utilisant l'API Search.
 
-Documentation : https://opensearch.org/docs/1.2/opensearch/rest-api/search/ ou https://www.elastic.co/guide/en/elasticsearch/reference/8.6/search.html
+Documentation : https://opensearch.org/docs/2.6/api-reference/search/ ou https://www.elastic.co/guide/en/elasticsearch/reference/8.6/search.html
 
 - (Question) Rechercher les documents contenant le terme KING dans les champs text_entry OU playname. Accordez deux fois plus d’importance aux documents qui contiennent le terme dans le champ play_name (astuce : KING^2).
 - (Question) Rechercher les documents où l’orateur (champ speaker) CAESAR parle de Brutus (champ text_entry)
