@@ -140,9 +140,9 @@ Documentation : https://opensearch.org/docs/2.6/api-reference/search/ ou https:/
 - (Question) Rechercher les documents contenant le terme KING dans les champs text_entry OU playname. Accordez deux fois plus d’importance aux documents qui contiennent le terme dans le champ play_name (astuce : KING^2).
 - (Question) Rechercher les documents où l’orateur (champ speaker) CAESAR parle de Brutus (champ text_entry)
 - (Question) Rechercher les documents où l’orateur(champ speaker) CAESAR ne parle PAS de Brutus (champ text_entry)
-- (Question) Rechercher les documents répondant à la requête caesar brutus calpurnia
-- (Question) Selon vous, pourquoi le cinquième document, qui contient tous les termes, n’est pas en première position ?
-- (Question) Modifier la requête pour que seul le cinquième document réponde.
+- (Question) Rechercher les documents répondant à la requête `caesar brutus calpurnia`
+- (Question) Selon vous, pourquoi le quatrième document, qui contient tous les termes, n’est pas en première position ?
+- (Question) Modifier la requête pour que seul le quatrième document réponde.
 - (Question) Rechercher les documents répondant à la requête cesar (la faute est volontaire)
 - (Question) Pourquoi aucun document ne répond ?
 - (Question) Essayez maintenant avec la requête cesar~ 
