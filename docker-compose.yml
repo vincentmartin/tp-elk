@@ -3,8 +3,9 @@ services:
 
   # Serveur OpenSearch (fork Elasticsearch 7.10)
   opensearch:
-    image: opensearchproject/opensearch:2.6.0
+    image: opensearchproject/opensearch:2.18.0
     container_name: opensearch
+    user: "1000:1000"  # Spécifiez l'utilisateur et le groupe ici
     environment:
       - cluster.name=docker-cluster
       - discovery.type=single-node
@@ -12,6 +13,7 @@ services:
       - node.roles=ml, data, master, ingest
       - plugins.ml_commons.native_memory_threshold=100
       - plugins.security.disabled=true # ATTENTION : SECURITE DESACTIVE
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=MotDePasse-2  # ATTENTION : SECURITE DESACTIVE
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
     volumes:
       - ./docker/opensearch/data:/usr/share/opensearch/data
@@ -27,7 +29,7 @@ services:
 
   # Logstash pour l'ingestion de données
   logstash-oss:
-    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:8.6.1
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:8.9.0
     container_name: logstash-oss
     environment:
       - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
@@ -42,7 +44,7 @@ services:
       
   # Opensearch dashboard pour la visualisation
   opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:2.6.0
+    image: opensearchproject/opensearch-dashboards:2.18.0
     container_name: opensearch-dashboards
     ports:
         - 5601:5601

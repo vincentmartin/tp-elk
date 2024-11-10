@@ -1,6 +1,6 @@
 # Introduction
 
-Dans ce TP, vous allez installer la suite ELK (Elasticsearch, Logstash, Kibana) dans sa version open source : **OpenSearch** (Nouveauté 2022). Le coeur de cette suite est OpenSearch (fork Elasticsearch), une base NoSQL orientée document mais aussi un moteur de recherche puissant qui est de plus en plus utilisé dans l’industrie ; non seulement pour ses capacités de recherche mais aussi pour ses fonctionnalités de Business Intelligence (BI).
+Dans ce TP, vous allez installer la suite ELK (Elasticsearch, Logstash, Kibana) dans sa version open source : **OpenSearch**. Le coeur de cette suite est OpenSearch (fork Elasticsearch), une base NoSQL orientée document mais aussi un moteur de recherche puissant qui est de plus en plus utilisé dans l’industrie ; non seulement pour ses capacités de recherche mais aussi pour ses fonctionnalités de Business Intelligence (BI).
 
 Vous allez travailler sur des données factices représentant des comptes bancaires, des textes de Shakespeare et des news. A l’issu de ce TP, vous serez capable de :
 - Déployer un environnement ELK en quelques minutes ;
@@ -23,9 +23,9 @@ A la racine, créer le fichier docker-compose.yml  qui contiendra toutes les ins
 ## Images
 
 ```
-opensearchproject/opensearch:2.6.0
-opensearchproject/logstash-oss-with-opensearch-output-plugin:8.6.1
-opensearchproject/opensearch-dashboards:2.6.0
+opensearchproject/opensearch:2.18.0
+opensearchproject/logstash-oss-with-opensearch-output-plugin:8.9.0
+opensearchproject/opensearch-dashboards:2.18.0
 ```
 
 ## Ports
@@ -80,7 +80,7 @@ Se rendre à l’URL http://localhost:5601 puis dans `Dev Tools`.
 
 A l’aide de la documentation disponible au lien ci-dessous, vous allez écrire les requêtes permettant de répondre à différentes questions.
 
-Documentation utile : https://opensearch.org/docs/2.6/
+Documentation utile : https://opensearch.org/docs/latest/.
 
 ## Requêtage simple 
 
@@ -135,7 +135,7 @@ L’objectif des questions ci-dessous est de se rendre compte de ses capacités 
 
 Répondre aux questions suivante en utilisant l'API Search.
 
-Documentation : https://opensearch.org/docs/2.6/api-reference/search/ ou https://www.elastic.co/guide/en/elasticsearch/reference/8.6/search.html
+Documentation : https://opensearch.org/docs/latest/api-reference/search/
 
 - (Question) Rechercher les documents contenant le terme KING dans les champs text_entry OU playname. Accordez deux fois plus d’importance aux documents qui contiennent le terme dans le champ play_name (astuce : KING^2).
 - (Question) Rechercher les documents où l’orateur (champ speaker) CAESAR parle de Brutus (champ text_entry)
@@ -150,7 +150,7 @@ Documentation : https://opensearch.org/docs/2.6/api-reference/search/ ou https:/
 
 ### AGGREGATION API
 
-Documentation : https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html
+Documentation : https://opensearch.org/docs/latest/aggregations/ ou https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html (mieux expliqué mais attention à la compatibilité)
 
 - (Question) Trouver le nombre total de pièces (champ play_name)
 - (Question) En une requête, calculer le nombre de lignes (champ line_id) pour chaque pièce (champ play_name)
@@ -179,25 +179,37 @@ Dans ce TP, nous allons utiliser l'un de ces modèles pour construire un _embedd
 
 ## Téléchargement et intégration d'un modèle _sentence transformers_ à OpenSearch
 
-Documentation : https://opensearch.org/docs/2.5/neural-search-plugin/index/
+Documentation : https://opensearch.org/docs/latest/search-plugins/neural-search/
 
 
 - Se placer dans le `Dev Tools` d'OpenSearch.
-- Exécuter la requête suivante pour télécharger le modèle puis noter le `task_id`
+- Exécuter la requête suivante pour autoriser le chargement de modèles.
 ```
-POST /_plugins/_ml/models/_upload
+PUT _cluster/settings
 {
-  "name": "all-MiniLM-L6-v2",
-  "version": "1.0.0",
-  "description": "Small model for semantic search",
-  "model_format": "TORCH_SCRIPT",
-  "model_config": {
-    "model_type": "bert",
-    "embedding_dimension": 384,
-    "framework_type": "sentence_transformers"
-  },
-  "url": "https://github.com/opensearch-project/ml-commons/raw/2.x/ml-algorithms/src/test/resources/org/opensearch/ml/engine/algorithms/text_embedding/all-MiniLM-L6-v2_torchscript_sentence-transformer.zip?raw=true"
+  "persistent": {
+    "plugins.ml_commons.allow_registering_model_via_url": true
+  }
 }
+```
+- Exécutrer la requête suivante pour créer un groupe de modèles  et noter le `group_id`
+```
+POST /_plugins/_ml/model_groups/_register
+{
+  "name": "sentence_transformers",
+  "description": "Groupe pour les modèles sentence transformers"
+}
+```
+- Exécuter la requête suivante pour télécharger le modèle puis noter le `task_id` (attention à remplacer le `group_id` par la valeur notée précédemment)
+```
+POST /_plugins/_ml/models/_register
+{
+  "name": "huggingface/sentence-transformers/all-MiniLM-L6-v2",
+  "version": "1.0.1",
+  "model_group_id": "<group_id>",
+  "model_format": "TORCH_SCRIPT"
+}
+Une liste de modèles pré-entraînés est disponible ici https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/
 ```
 - Exécuter la commande suivante en spécifiant le `task_id` noté précédemment et patienter jusqu'à ce que la tâche soit marquée `COMPLETED`. Noter le `model_id`.
 ```
@@ -205,7 +217,7 @@ GET /_plugins/_ml/tasks/<task_id>
 ```
 - Charger le modèle en mémoire en spécifiant le `model_id` noté précédemment.
 ```
-POST /_plugins/_ml/models/<model_id>/_load
+POST /_plugins/_ml/models/<model_id>/_deploy
 ```
 - Créer une pipeline d'ingestion qui indique à OpenSearch de calculer l'embedding sur le texte d'un champ d'un document json. Spécifier le `model_id` dans le champ associé. Exécuter la commande suivante :
 ```
