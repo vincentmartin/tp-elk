@@ -135,7 +135,9 @@ L’objectif des questions ci-dessous est de se rendre compte de ses capacités 
 
 Répondre aux questions suivante en utilisant l'API Search.
 
-Documentation : https://opensearch.org/docs/latest/api-reference/search/
+Documentation : 
+- https://opensearch.org/docs/latest/api-reference/search/
+- https://opensearch.org/docs/latest/query-dsl/full-text/query-string/
 
 Vous pouvez répondre à toutes les questions en utilisant cett syntaxe :
 
