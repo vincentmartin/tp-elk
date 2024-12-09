@@ -137,10 +137,12 @@ Répondre aux questions suivante en utilisant l'API Search.
 
 Documentation : https://opensearch.org/docs/latest/api-reference/search/
 
+Vous pouvez répondre à toutes les questions en utilisant cett syntaxe :
 
 ```
 GET shakespeare/_search?q=query OR champ:query
 ```
+
 
 - (Question) Rechercher les documents contenant le terme KING dans les champs text_entry OU playname. Accordez deux fois plus d’importance aux documents qui contiennent le terme dans le champ play_name (astuce : KING^2).
 - (Question) Rechercher les documents où l’orateur (champ speaker) CAESAR parle de Brutus (champ text_entry)
