@@ -2,15 +2,15 @@
 
 Dans ce TP, vous allez installer la suite ELK (Elasticsearch, Logstash, Kibana) dans sa version open source : **OpenSearch**. Le coeur de cette suite est OpenSearch (fork Elasticsearch), une base NoSQL orientée document mais aussi un moteur de recherche puissant qui est de plus en plus utilisé dans l’industrie ; non seulement pour ses capacités de recherche mais aussi pour ses fonctionnalités de Business Intelligence (BI).
 
-Vous allez travailler sur des données factices représentant des comptes bancaires, des textes de Shakespeare et des news. A l’issu de ce TP, vous serez capable de :
+Vous allez travailler sur des données factices représentant des comptes bancaires, des textes de Shakespeare et des news. A l’issue de ce TP, vous serez capable de :
 - Déployer un environnement ELK en quelques minutes ;
 - Ingérer des documents JSON (semi-structurés) ;
 - Construire et exécuter des requêtes ;
-- Fabriquer des visualisations permettant d’explorer vos données grâce à OpenDashboards (fork Kibana) ;
+- Fabriquer des visualisations permettant d’explorer vos données grâce à OpenSearch Dashboards (fork Kibana) ;
 - Intégrer un modèle de TALN pré-entraîné pour répondre à des requêtes sémantiques ;
 - Ingérer d’autres formats de données grâce à logstash.
 
-**Evaluation** : L’évaluation portera sur un rapport d’un 10aine de pages dans lequel vous indiquerez _honnêtement_ les réponses aux questions de ce TP. Les questions sont préfixées par `(Question)`.
+**Evaluation** : L’évaluation portera sur un rapport d’une dizaine de pages dans lequel vous indiquerez _honnêtement_ les réponses aux questions de ce TP. Les questions sont préfixées par `(Question)`.
 
 Le rapport est à soumettre sur Moodle avant la date indiquée.
 
@@ -23,9 +23,9 @@ A la racine, créer le fichier docker-compose.yml  qui contiendra toutes les ins
 ## Images
 
 ```
-opensearchproject/opensearch:2.18.0
+opensearchproject/opensearch:3
 opensearchproject/logstash-oss-with-opensearch-output-plugin:8.9.0
-opensearchproject/opensearch-dashboards:2.18.0
+opensearchproject/opensearch-dashboards:3
 ```
 
 ## Ports
@@ -133,7 +133,7 @@ L’objectif des questions ci-dessous est de se rendre compte de ses capacités 
 
 ### SEARCH API
 
-Répondre aux questions suivante en utilisant l'API Search.
+Répondre aux questions suivantes en utilisant l'API Search.
 
 Documentation : 
 - https://opensearch.org/docs/latest/api-reference/search/
@@ -144,7 +144,10 @@ Vous pouvez répondre à toutes les questions en utilisant cett syntaxe :
 ```
 GET shakespeare/_search?q=query OR champ:query
 ```
+<<<<<<< HEAD
 
+=======
+>>>>>>> 13aa1ea (Mise à jour 2025-2026 avec OS 3 et recherches sémantiques.)
 
 - (Question) Rechercher les documents contenant le terme KING dans les champs text_entry OU playname. Accordez deux fois plus d’importance aux documents qui contiennent le terme dans le champ play_name (astuce : KING^2).
 - (Question) Rechercher les documents où l’orateur (champ speaker) CAESAR parle de Brutus (champ text_entry)
@@ -172,11 +175,11 @@ Les recherches réalisées précédemment sont principalement des recherches par
 
 Certes, des techniques existent pour limiter l'impact des variations syntaxiques (bas/haut de casses, mots au pluriel/singulier, synonymes) mais cela pose plusieurs problèmes :
 - effort requis pour paramétrer minutieusement la construction des tokens ;
-- recourt à des dictionnaires, notamment pour les synonymes ;
+- recours à des dictionnaires, notamment pour les synonymes ;
 - prise en compte des points précédents pour différentes langues ;
 - sens d'une phrase, paragraphe, document non pris en compte dans sa globalité.
 
-Pour palier ces problèmes, on peut utiliser des techniques avancées de Traitement Automatique du Langage Naturel (TALN) pour construire des espaces vectoriels _sémantiques_ où les mots, paragraphes, documents sont représentés par des vecteurs, appelés _embeddings_, encodant le sens des informations plutôt que leur syntaxe. Les espace vectoriels associés ont une taille fixe, de quelques centaines de dimensions. Ci-dessous un exemple de ce type d'espace en 2 dimensions (source : https://dev.to/jinglescode/word-embeddings-16hb)
+Pour pallier ces problèmes, on peut utiliser des techniques avancées de Traitement Automatique du Langage Naturel (TALN) pour construire des espaces vectoriels _sémantiques_ où les mots, paragraphes, documents sont représentés par des vecteurs, appelés _embeddings_, encodant le sens des informations plutôt que leur syntaxe. Les espaces vectoriels associés ont une taille fixe, de quelques centaines de dimensions. Ci-dessous un exemple de ce type d'espace en 2 dimensions (source : https://dev.to/jinglescode/word-embeddings-16hb)
 
 ![embeddings](./img/embeddings_2d.png)
 
@@ -201,7 +204,7 @@ PUT _cluster/settings
   }
 }
 ```
-- Exécutrer la requête suivante pour créer un groupe de modèles  et noter le `group_id`
+- Exécuter la requête suivante pour créer un groupe de modèles  et noter le `group_id`
 ```
 POST /_plugins/_ml/model_groups/_register
 {
@@ -218,8 +221,9 @@ POST /_plugins/_ml/models/_register
   "model_group_id": "<group_id>",
   "model_format": "TORCH_SCRIPT"
 }
-Une liste de modèles pré-entraînés est disponible ici https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/
 ```
+Une liste de modèles pré-entraînés est disponible ici https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/
+
 - Exécuter la commande suivante en spécifiant le `task_id` noté précédemment et patienter jusqu'à ce que la tâche soit marquée `COMPLETED`. Noter le `model_id`.
 ```
 GET /_plugins/_ml/tasks/<task_id>
@@ -232,7 +236,7 @@ POST /_plugins/_ml/models/<model_id>/_deploy
 ```
 PUT _ingest/pipeline/news-nlp-pipeline
 {
-  "description": "Pipeline calculant l'embeddings sur le texte du champ 'short description'",
+  "description": "Pipeline calculant l'embedding sur le texte du champ 'short description'",
   "processors" : [
     {
       "text_embedding": {
@@ -311,7 +315,7 @@ GET <index>/_search?size=10
 - (Question) Rechercher les articles similaires à celui-ci https://www.huffpost.com/entry/15-comedy-documentaries-worth-watching-on-netflix-photos_n_1619966. Copier / coller le début de l'article dans la requête.
 
 # Partie 4 - Pour aller plus loin : Logstash
-Logstash est un formidable outil pour le traitement et l’ingestion de données, notamment dans Elastic search.
+Logstash est un formidable outil pour le traitement et l’ingestion de données, notamment dans OpenSearch.
 
 - Etudier logstash sur la page https://opensearch.org/docs/latest/tools/logstash/index/
 - Télécharger la carte des hôtels classés en IDF ici https://www.data.gouv.fr/fr/datasets/la-carte-des-hotels-classes-en-ile-de-france-idf/
