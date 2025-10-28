@@ -7,6 +7,7 @@ services:
     container_name: opensearch
     user: "1000:1000"  # Spécifiez l'utilisateur et le groupe ici
     environment:
+      # Paramètres dédiés au TP : sécurité désactivée et mot de passe simple.
       - cluster.name=docker-cluster
       - discovery.type=single-node
       - bootstrap.memory_lock=true
@@ -24,6 +25,12 @@ services:
     ports:
       - 9200:9200
       - 9600:9600
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
     networks:
       - opensearch-net
 
@@ -37,6 +44,7 @@ services:
       - 5000:5000
     #volumes:
     #  - ./pipeline:/usr/share/logstash/pipeline:ro
+    restart: unless-stopped
     networks:
       - opensearch-net
     depends_on:
@@ -57,6 +65,7 @@ services:
       - ./docker/opensearch-dashboards/config/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
     depends_on:
       - opensearch
+    restart: unless-stopped
 
 networks:
   opensearch-net:
