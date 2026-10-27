@@ -17,8 +17,7 @@ Le rapport est à soumettre sur Moodle avant la date indiquée.
 
 # Installation de la suite ELK
 
-Créer le dossier “TP-ELK”
-A la racine, créer le fichier docker-compose.yml  qui contiendra toutes les instructions à la mise en place de l’environnement ELK (3 containers, un pour OpenSearch, un pour logstash et un pour OpenSearch-dashboards). Configuration :
+Le fichier `docker-compose.yml` est fourni à la racine du dépôt. Il décrit l'environnement ELK : 3 conteneurs, un pour OpenSearch, un pour Logstash et un pour OpenSearch Dashboards.
 
 ## Images
 
@@ -40,36 +39,54 @@ opensearchproject/opensearch-dashboards:3
 bridge
 ```
 
-Aidez-vous de la documentation https://opensearch.org/downloads.html#docker-compose pour créer votre fichier docker-compose.yml.
+- (Question) Étudiez le fichier `docker-compose.yml` en vous aidant de la documentation https://docs.opensearch.org/latest/install-and-configure/install-opensearch/docker/. Pour chaque service, expliquez son rôle, les ports exposés et les principaux paramètres (`discovery.type`, `node.roles`, `OPENSEARCH_JAVA_OPTS`, `healthcheck`, `depends_on`). Pourquoi la sécurité est-elle désactivée, et pourquoi ne faut-il jamais le faire en production ?
 
-Exécutez 
+## Préparation de la machine
+
+OpenSearch a besoin d'un paramètre noyau plus élevé que la valeur par défaut :
+
+- **Linux** :
+```
+sudo sysctl -w vm.max_map_count=262144
+```
+Commande à exécuter à chaque redémarrage, ou ajoutez `vm.max_map_count=262144` dans le fichier `/etc/sysctl.conf` pour une configuration permanente.
+
+- **Windows (Docker Desktop avec WSL 2)** :
+```
+wsl -d docker-desktop sh -c "sysctl -w vm.max_map_count=262144"
+```
+
+- **macOS (Docker Desktop)** : en général, rien à faire.
+
+Sous Linux, créez aussi le dossier de données et donnez-le à l'utilisateur du conteneur (UID 1000), sinon OpenSearch ne pourra pas y écrire :
 
 ```
-sysctl -w vm.max_map_count=262144 
+mkdir -p docker/opensearch/data
+sudo chown -R 1000:1000 docker/opensearch/data
 ```
 
-pour qu'OpenSearch se lance correctement. Commande à exécuter à chaque redémarrage ou spécifier `vm.max_map_count=262144`  dans le fichier `/etc/sysctl.conf` pour une configuration permanente. 
+## Lancement
 
 Lancer la commande
 
 ```
-docker-compose up
+docker compose up -d
 ```
 
-pour construire l’environnement. 
+pour construire l'environnement (Docker Compose v2 : `docker compose`, sans tiret).
 
-Vérifier le bon fonctionnement de l’environnement en inspectant les logs de `docker-compose` et en vous connectant à l’URL http://localhost:9200
+Vérifier le bon fonctionnement de l'environnement en inspectant les logs (`docker compose logs -f opensearch`) et en vous connectant à l'URL http://localhost:9200
 
 # Partie 1 - Gestion de données simples
 ## Indexation de données
 
-Télécharger le jeu de données sur https://download.elastic.co/demos/kibana/gettingstarted/accounts.zip.
+Le jeu de données est fourni dans le dossier `data` : `data/accounts.json`.
 
 
 Indexer les données dans OpenSearch grâce à la commande suivante :
 
 ```
-curl -H 'Content-Type: application/x-ndjson' -XPOST 'localhost:9200/bank/_bulk?pretty' --data-binary @accounts.json
+curl -H 'Content-Type: application/x-ndjson' -XPOST 'localhost:9200/bank/_bulk?pretty' --data-binary @data/accounts.json
 ```
 
 Toutes les données sont alors envoyées dans l’index nommé `bank`.
@@ -80,7 +97,7 @@ Se rendre à l’URL http://localhost:5601 puis dans `Dev Tools`.
 
 A l’aide de la documentation disponible au lien ci-dessous, vous allez écrire les requêtes permettant de répondre à différentes questions.
 
-Documentation utile : https://opensearch.org/docs/latest/.
+Documentation utile : https://docs.opensearch.org/latest/.
 
 ## Requêtage simple 
 
@@ -103,7 +120,9 @@ Documentation utile : https://opensearch.org/docs/latest/.
 - (Question) Retrouver tous les comptes dont la ville (champs city) est Belvoir ET l’employeur Xurban
 
 ## Visualisation des données avec OpenSearch Dashboards
-Aller sur l’onglet Visualize et créer les visuels suivants :
+Avant de créer des visuels, déclarez l'index à OpenSearch Dashboards : menu `Dashboards Management` › `Index patterns` › `Create index pattern`, saisissez `bank`, puis validez.
+
+Aller ensuite sur l’onglet Visualize et créer les visuels suivants :
 
 - (Question) Métrique affichant la somme des soldes de tous les comptes. Sauver le graphique.
 - (Question) Graphique barre affichant la moyenne des soldes (champ balance) selon l’état (champ state). Sauver le graphique.
@@ -119,11 +138,11 @@ Rendez-vous ensuite sur l’onglet Dashboard puis :
 Dans cette partie nous allons travailler avec des données principalement textuelles et nous allons palper la puissance d'OpenSearch en tant que moteur de recherche plein texte.
 
 ## Indexation de données
-- Télécharger le jeu de données https://download.elastic.co/demos/kibana/gettingstarted/shakespeare_6.0.json
+- Le jeu de données est fourni dans le dossier `data` : `data/shakespeare_6.0.json`.
 - Indexer les données dans OpenSearch grâce à la commande suivante :
 
 ```
-curl -H 'Content-Type: application/x-ndjson' -XPOST 'localhost:9200/shakespeare/_bulk?pretty' --data-binary @shakespeare_6.0.json
+curl -H 'Content-Type: application/x-ndjson' -XPOST 'localhost:9200/shakespeare/_bulk?pretty' --data-binary @data/shakespeare_6.0.json
 ```
 
 ## Recherches plein texte
@@ -136,16 +155,16 @@ L’objectif des questions ci-dessous est de se rendre compte de ses capacités 
 Répondre aux questions suivantes en utilisant l'API Search.
 
 Documentation : 
-- https://opensearch.org/docs/latest/api-reference/search/
-- https://opensearch.org/docs/latest/query-dsl/full-text/query-string/
+- https://docs.opensearch.org/latest/api-reference/search/
+- https://docs.opensearch.org/latest/query-dsl/full-text/query-string/
 
-Vous pouvez répondre à toutes les questions en utilisant cett syntaxe :
+Vous pouvez répondre à toutes les questions en utilisant cette syntaxe :
 
 ```
 GET shakespeare/_search?q=query OR champ:query
 ```
 
-- (Question) Rechercher les documents contenant le terme KING dans les champs text_entry OU playname. Accordez deux fois plus d’importance aux documents qui contiennent le terme dans le champ play_name (astuce : KING^2).
+- (Question) Rechercher les documents contenant le terme KING dans les champs text_entry OU play_name. Accordez deux fois plus d’importance aux documents qui contiennent le terme dans le champ play_name (astuce : KING^2).
 - (Question) Rechercher les documents où l’orateur (champ speaker) CAESAR parle de Brutus (champ text_entry)
 - (Question) Rechercher les documents où l’orateur(champ speaker) CAESAR ne parle PAS de Brutus (champ text_entry)
 - (Question) Rechercher les documents répondant à la requête `caesar brutus calpurnia`
@@ -158,14 +177,14 @@ GET shakespeare/_search?q=query OR champ:query
 
 ### AGGREGATION API
 
-Documentation : https://opensearch.org/docs/latest/aggregations/ ou https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html (mieux expliqué mais attention à la compatibilité)
+Documentation : https://docs.opensearch.org/latest/aggregations/ ou https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html (mieux expliqué mais attention à la compatibilité)
 
 - (Question) Trouver le nombre total de pièces (champ play_name)
 - (Question) En une requête, calculer le nombre de lignes (champ line_id) pour chaque pièce (champ play_name)
 
 # Partie 3 - Recherches sémantiques
 
-Les recherches réalisées précédemment sont principalement des recherches par mots ou par phrases basés sur le modèle `tf-idf`. Ce dernier construit un espace vectoriel dont la taille est égal au nombre total de tokens distincts dans la collection de documents. L'image ci-dessous représente un espace vectoriel avec 3 tokens distincts. Imaginez ce que cela donnerait avec 100,000 tokens distincts !
+Les recherches réalisées précédemment sont principalement des recherches par mots ou par phrases basées sur le modèle `BM25`, le modèle par défaut d'OpenSearch, de la même famille que `tf-idf`. Ces modèles construisent un espace vectoriel dont la taille est égale au nombre total de tokens distincts dans la collection de documents. L'image ci-dessous représente un espace vectoriel avec 3 tokens distincts. Imaginez ce que cela donnerait avec 100,000 tokens distincts !
 
 ![tf-df-vector-space](./img/tfidf-vector-space.png)
 
@@ -187,7 +206,7 @@ Dans ce TP, nous allons utiliser l'un de ces modèles pour construire un _embedd
 
 ## Téléchargement et intégration d'un modèle _sentence transformers_ à OpenSearch
 
-Documentation : https://opensearch.org/docs/latest/search-plugins/neural-search/
+Documentation : https://docs.opensearch.org/latest/search-plugins/neural-search/
 
 
 - Se placer dans le `Dev Tools` d'OpenSearch.
@@ -218,7 +237,7 @@ POST /_plugins/_ml/models/_register
   "model_format": "TORCH_SCRIPT"
 }
 ```
-Une liste de modèles pré-entraînés est disponible ici https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/
+Une liste de modèles pré-entraînés est disponible ici https://docs.opensearch.org/latest/ml-commons-plugin/pretrained-models/
 
 - Exécuter la commande suivante en spécifiant le `task_id` noté précédemment et patienter jusqu'à ce que la tâche soit marquée `COMPLETED`. Noter le `model_id`.
 ```
@@ -261,7 +280,7 @@ PUT /news
         "method": {
           "name": "hnsw",
           "space_type": "l2",
-          "engine": "nmslib",
+          "engine": "faiss",
           "parameters": {
             "ef_construction": 128,
             "m": 24
@@ -284,7 +303,7 @@ PUT /news
 Le jeu de données est un ensemble de `210,294` news entre 2012 et 2022 au format JSON.
 
 - Télécharger les données https://www.kaggle.com/datasets/rmisra/news-category-dataset?resource=download ou me demander si vous n'avez pas de compte sur Kaggle.
-- Lancer, lire et exécuter le notebook `notebooks/ingest_news.ipynb`. Ce notebook contient le code nécessaire à la lecture des news et à leur ingestion dans elasticsearch.
+- Lancer, lire et exécuter le notebook `notebooks/ingest_news.ipynb`. Ce notebook contient le code nécessaire à la lecture des news et à leur ingestion dans OpenSearch.
 
 ## Recherches
 
@@ -313,7 +332,8 @@ GET <index>/_search?size=10
 # Partie 4 - Pour aller plus loin : Logstash
 Logstash est un formidable outil pour le traitement et l’ingestion de données, notamment dans OpenSearch.
 
-- Etudier logstash sur la page https://opensearch.org/docs/latest/tools/logstash/index/
-- Télécharger la carte des hôtels classés en IDF ici https://www.data.gouv.fr/fr/datasets/la-carte-des-hotels-classes-en-ile-de-france-idf/
+- Etudier logstash sur la page https://docs.opensearch.org/latest/tools/logstash/index/
+- Créer un dossier `pipeline` à la racine du dépôt et y placer uniquement votre configuration Logstash (fichier `.conf`) : Logstash charge tous les fichiers de ce dossier comme des configurations. Placer les données dans le dossier `data`, visible par Logstash sous `/usr/share/logstash/tp-data`. Décommenter ensuite les lignes `volumes` du service `logstash-oss` dans `docker-compose.yml` et relancer `docker compose up -d`
+- Télécharger la carte des hôtels classés en IDF ici https://www.data.gouv.fr/datasets/la-carte-des-hotels-classes-en-ile-de-france-idf
 puis écrire une configuration Logstash pour ingérer ces données dans OpenSearch
 - (Question) Développez un tableau de bord sur ces données. Ce tableau devra comporter une carte géographique des hôtels classés en fonction de leur nombre d’étoiles.

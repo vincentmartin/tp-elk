@@ -1,4 +1,3 @@
-version: '3'
 services:
 
   # Serveur OpenSearch (fork Elasticsearch 7.10)
@@ -11,7 +10,7 @@ services:
       - cluster.name=docker-cluster
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - node.roles=ml, data, master, ingest
+      - node.roles=cluster_manager,data,ingest,ml
       - plugins.ml_commons.native_memory_threshold=100
       - plugins.security.disabled=true # ATTENTION : SECURITE DESACTIVE
       - OPENSEARCH_INITIAL_ADMIN_PASSWORD=MotDePasse-2  # ATTENTION : SECURITE DESACTIVE
@@ -42,13 +41,17 @@ services:
       - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
     ports:
       - 5000:5000
+    # Partie 4 : décommenter les 3 lignes ci-dessous après avoir créé le dossier ./pipeline
+    # (configurations Logstash .conf) ; les fichiers de données vont dans ./data
     #volumes:
     #  - ./pipeline:/usr/share/logstash/pipeline:ro
+    #  - ./data:/usr/share/logstash/tp-data:ro
     restart: unless-stopped
     networks:
       - opensearch-net
     depends_on:
-      - opensearch
+      opensearch:
+        condition: service_healthy
       
   # Opensearch dashboard pour la visualisation
   opensearch-dashboards:
@@ -64,7 +67,8 @@ services:
     volumes:
       - ./docker/opensearch-dashboards/config/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
     depends_on:
-      - opensearch
+      opensearch:
+        condition: service_healthy
     restart: unless-stopped
 
 networks:
