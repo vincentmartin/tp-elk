@@ -65,6 +65,8 @@ mkdir -p docker/opensearch/data
 sudo chown -R 1000:1000 docker/opensearch/data
 ```
 
+**Espace disque** : gardez au moins 10 % d'espace libre. Au-delà de 90 % d'occupation, OpenSearch refuse de créer de nouveaux index (erreur `create-index blocked`) ; au-delà de 95 %, il passe les index existants en lecture seule (erreur `flood-stage watermark`). Libérez de l'espace avant de commencer le TP.
+
 ## Lancement
 
 Lancer la commande
@@ -280,7 +282,7 @@ PUT /news
         "method": {
           "name": "hnsw",
           "space_type": "l2",
-          "engine": "faiss",
+          "engine": "lucene",
           "parameters": {
             "ef_construction": 128,
             "m": 24

@@ -14,7 +14,7 @@ services:
       - plugins.ml_commons.native_memory_threshold=100
       - plugins.security.disabled=true # ATTENTION : SECURITE DESACTIVE
       - OPENSEARCH_INITIAL_ADMIN_PASSWORD=MotDePasse-2  # ATTENTION : SECURITE DESACTIVE
-      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
     volumes:
       - ./docker/opensearch/data:/usr/share/opensearch/data
     ulimits:
@@ -38,7 +38,7 @@ services:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:8.9.0
     container_name: logstash-oss
     environment:
-      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
     ports:
       - 5000:5000
     # Partie 4 : décommenter les 3 lignes ci-dessous après avoir créé le dossier ./pipeline
